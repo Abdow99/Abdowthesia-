@@ -5,23 +5,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Abdowthesia Pro</title>
     <style>
-        :root { --primary: #20c997; --bg: #0f172a; --card: #1e293b; --text: #f8fafc; --accent: #38bdf8; --warn: #fb7185; }
+        :root { --primary: #20c997; --bg: #0f172a; --card: #1e293b; --text: #f8fafc; --accent: #38bdf8; --warn: #fb7185; --rescue: #f43f5e; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); color: var(--text); padding: 10px; margin: 0; line-height: 1.4; }
         .container { max-width: 600px; margin: auto; }
         header { text-align: center; padding: 20px; background: var(--card); border-radius: 0 0 20px 20px; border-bottom: 4px solid var(--primary); margin-bottom: 15px; }
-        .input-box { background: var(--card); padding: 15px; border-radius: 12px; display: flex; align-items: center; gap: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
-        input { flex: 1; padding: 12px; border-radius: 8px; border: 1px solid #475569; background: #0f172a; color: white; font-size: 1.2rem; font-weight: bold; }
+        .input-section { display: flex; gap: 10px; margin-bottom: 15px; }
+        .input-box { background: var(--card); padding: 12px; border-radius: 12px; flex: 1; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+        label { display: block; font-size: 0.75rem; color: var(--primary); font-weight: bold; margin-bottom: 5px; }
+        input { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #475569; background: #0f172a; color: white; font-size: 1.1rem; font-weight: bold; box-sizing: border-box; }
         section { margin-top: 15px; }
-        .section-title { color: var(--primary); font-size: 0.9rem; font-weight: bold; text-transform: uppercase; margin-bottom: 8px; letter-spacing: 1px; display: flex; align-items: center; gap: 5px; }
+        .section-title { color: var(--primary); font-size: 0.9rem; font-weight: bold; text-transform: uppercase; margin-bottom: 8px; letter-spacing: 1px; }
         .card { background: var(--card); border-radius: 12px; padding: 12px; margin-bottom: 10px; }
         .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; text-align: center; }
         .label { font-size: 0.75rem; color: #94a3b8; }
         .val { font-size: 1rem; font-weight: bold; color: var(--accent); }
         table { width: 100%; border-collapse: collapse; margin-top: 5px; }
         th { text-align: left; font-size: 0.75rem; color: #94a3b8; border-bottom: 1px solid #334155; padding: 5px; }
-        td { padding: 10px 5px; border-bottom: 1px solid #334155; font-size: 0.9rem; }
+        td { padding: 10px 5px; border-bottom: 1px solid #334155; font-size: 0.85rem; vertical-align: middle; }
         .ml-col { color: var(--warn); font-weight: bold; font-size: 1.1rem; text-align: right; }
-        .infusion-row { background: rgba(56, 189, 248, 0.1); }
+        .rescue-row { border-left: 4px solid var(--rescue); background: rgba(244, 63, 94, 0.1); }
+        .infusion-row { border-left: 4px solid var(--accent); background: rgba(56, 189, 248, 0.1); }
+        .badge { font-size: 0.65rem; padding: 2px 5px; border-radius: 4px; background: var(--rescue); color: white; margin-left: 5px; }
     </style>
 </head>
 <body>
@@ -32,9 +36,15 @@
         <small style="color: #94a3b8;">Senior Consultant Decision Support</small>
     </header>
 
-    <div class="input-box">
-        <label>Weight (kg):</label>
-        <input type="number" id="weight" value="50" oninput="calculate()">
+    <div class="input-section">
+        <div class="input-box">
+            <label>Age (Years):</label>
+            <input type="number" id="age" value="15" oninput="updateFromAge()">
+        </div>
+        <div class="input-box">
+            <label>Weight (kg):</label>
+            <input type="number" id="weight" value="50" oninput="calculate()">
+        </div>
     </div>
 
     <section>
@@ -44,8 +54,8 @@
             <div><div class="label">Depth (cm)</div><div id="depth" class="val">--</div></div>
             <div><div class="label">Suction</div><div id="suction" class="val">--</div></div>
             <div><div class="label">TV (mL)</div><div id="tv" class="val">--</div></div>
-            <div><div class="label">RR</div><div id="rr" class="val">--</div></div>
-            <div><div class="label">Sevo MAC</div><div class="val">2.0%</div></div>
+            <div><div class="label">RR (bpm)</div><div id="rr" class="val">--</div></div>
+            <div><div class="label">MAC (Sevo)</div><div class="val">2.0%</div></div>
         </div>
     </section>
 
@@ -76,59 +86,82 @@
 </div>
 
 <script>
+function updateFromAge() {
+    const age = parseFloat(document.getElementById('age').value) || 0;
+    let avgWeight = 0;
+    
+    if (age < 1) avgWeight = (age * 12 + 9) / 2;
+    else if (age <= 8) avgWeight = (age * 2) + 8;
+    else if (age < 18) avgWeight = (age * 3) + 7;
+    else avgWeight = 70; 
+    
+    document.getElementById('weight').value = avgWeight.toFixed(0);
+    calculate();
+}
+
 function calculate() {
     const w = parseFloat(document.getElementById('weight').value) || 0;
+    const age = parseFloat(document.getElementById('age').value) || 0;
     
-    // 1. Airway Logic
-    let ett = (w < 30) ? (w/4 + 4).toFixed(1) : "7.0-7.5";
-    let depth = (w < 30) ? (w/2 + 12).toFixed(0) : "21";
-    document.getElementById('ett').innerText = ett;
-    document.getElementById('depth').innerText = depth + " cm";
-    document.getElementById('suction').innerText = "12Fr (White)";
-    document.getElementById('tv').innerText = (w * 7) + "-" + (w * 8);
-    document.getElementById('rr').innerText = (w > 30) ? "12-16" : "20-30";
+    let ett = (age < 1) ? 3.5 : (age >= 12 ? 7.5 : (age / 4) + 3.5);
+    let depth = (age < 1) ? 10 : (age >= 12 ? 21 : (age / 2) + 12);
+    
+    let suctionSize = Math.floor(ett * 2);
+    let suctionColor = "N/A";
+    if (suctionSize <= 6) suctionColor = "Light Green";
+    else if (suctionSize <= 8) suctionColor = "Blue";
+    else if (suctionSize <= 10) suctionColor = "Black";
+    else if (suctionSize <= 12) suctionColor = "White";
+    else if (suctionSize <= 14) suctionColor = "Green";
+    else suctionColor = "Orange";
 
-    // 2. Fluid Logic
-    let maint = 0;
-    if (w <= 10) maint = w * 4;
-    else if (w <= 20) maint = 40 + (w-10)*2;
-    else maint = 60 + (w-20);
+    document.getElementById('ett').innerText = ett.toFixed(1);
+    document.getElementById('depth').innerText = depth.toFixed(0) + " cm";
+    document.getElementById('suction').innerText = suctionSize + " Fr (" + suctionColor + ")";
+    document.getElementById('tv').innerText = (w * 7).toFixed(0) + "-" + (w * 8).toFixed(0);
     
+    let rr = "12-16";
+    if (age < 1) rr = "30-40";
+    else if (age < 5) rr = "20-25";
+    else if (age < 12) rr = "16-20";
+    document.getElementById('rr').innerText = rr;
+
+    let maint = (w <= 10) ? (w * 4) : (w <= 20 ? (40 + (w-10)*2) : (60 + (w-20)));
     let deficit = maint * 6;
-    document.getElementById('maint').innerText = maint + " mL/hr";
-    document.getElementById('hr1').innerText = (maint + (deficit/2)) + " mL";
-    document.getElementById('hrNext').innerText = (maint + (deficit/4)) + " mL/hr";
+    document.getElementById('maint').innerText = maint + " mL/h";
+    document.getElementById('hr1').innerText = (maint + (deficit/2)).toFixed(0) + " mL";
+    document.getElementById('hrNext').innerText = (maint + (deficit/4)).toFixed(0) + " mL/h";
 
-    // 3. Drug Database
-    const drugs = [
+    const drugData = [
+        { name: "Adrenaline", prep: "1mL in 10mL", dose: w*0.01, unit: "mg", ml: (w*0.01/0.1), type: "rescue" },
+        { name: "Ephedrine (Bolus)", prep: "Amp in 10mL", dose: 10, unit: "mg", ml: 3.3, type: "rescue" },
         { name: "Propofol (Induction)", prep: "200mg/20mL", dose: w*2, unit: "mg", ml: (w*2/10) },
-        { name: "Propofol (Sedation/Bolus)", prep: "200mg/20mL", dose: w*0.5, unit: "mg", ml: (w*0.5/10) },
         { name: "Fentanyl", prep: "100mcg/10mL", dose: w*2, unit: "mcg", ml: (w*2/10) },
         { name: "Atracurium", prep: "50mg/10mL", dose: w*0.5, unit: "mg", ml: (w*0.5/5) },
-        { name: "Neostigmine", prep: "Amp in 10mL", dose: w*0.05, unit: "mg", ml: (w*0.05/0.5) },
-        { name: "Atropine", prep: "Amp in 10mL", dose: w*0.02, unit: "mg", ml: (w*0.02/0.1) },
+        { name: "Neostigmine", prep: "1 ml in 10mL", dose: w*0.05, unit: "mg", ml: (w*0.05/0.5) },
+        { name: "Atropine", prep: "1 ml in 10mL", dose: w*0.01, unit: "mg", ml: (w*0.01/0.1) },
+        { name: "Noradrenaline (Inf)", prep: "8mg in 50mL", dose: 0.05, unit: "mcg/kg/m", ml: (0.05*w*60/160), type: "inf" },
+        { name: "Dexmedetomidine (Inf)", prep: "50mcg in 50mL", dose: 0.5, unit: "mcg/kg/h", ml: (0.5*w/1), type: "inf" },
         { name: "Midazolam (Bolus)", prep: "5mg/5mL", dose: w*0.05, unit: "mg", ml: (w*0.05/1) },
         { name: "Ketamine", prep: "100mg/10mL", dose: w*1.5, unit: "mg", ml: (w*1.5/10) },
-        { name: "Morphine", prep: "10mg/10mL", dose: w*0.1, unit: "mg", ml: (w*0.1/1) },
-        { name: "Ephedrine (Bolus)", prep: "Amp in 10mL", dose: 10, unit: "mg", ml: 3.3 }, // Standard bolus
-        { name: "Noradrenaline (Inf)", prep: "8mg in 50mL", dose: 0.05, unit: "mcg/kg/m", ml: (0.05*w*60/160).toFixed(1), type: "inf" },
-        { name: "Dexmedetomidine (Inf)", prep: "50mcg in 50mL", dose: 0.5, unit: "mcg/kg/h", ml: (0.5*w/1).toFixed(1), type: "inf" },
-        { name: "Paracetamol", prep: "1000mg/100mL", dose: w*15, unit: "mg", ml: (w*15/10) },
-        { name: "Dexamethasone", prep: "4mg/10mL", dose: 4, unit: "mg", ml: 10 },
-        { name: "Ketorolac", prep: "Amp in 10mL", dose: 30, unit: "mg", ml: 10 }
+        { name: "Paracetamol", prep: "1000mg/100mL", dose: w*15, unit: "mg", ml: (w*15/10) }
     ];
 
     let html = "";
-    drugs.forEach(d => {
-        html += `<tr class="${d.type === 'inf' ? 'infusion-row' : ''}">
-            <td><b>${d.name}</b><br><small>${d.prep}</small></td>
-            <td>${d.dose} ${d.unit}${d.type==='inf'?'':''}</td>
-            <td class="ml-col">${d.ml} mL</td>
+    drugData.forEach(d => {
+        let rowClass = "";
+        if(d.type === 'inf') rowClass = "infusion-row";
+        if(d.type === 'rescue') rowClass = "rescue-row";
+
+        html += `<tr class="${rowClass}">
+            <td><b>${d.name}</b>${d.type==='rescue'?'<span class="badge">RESCUE</span>':''}<br><small>${d.prep}</small></td>
+            <td>${d.dose.toFixed(1)} ${d.unit}</td>
+            <td class="ml-col">${d.ml.toFixed(d.type === 'inf' ? 2 : 1)} mL${d.type === 'inf' ? '/hr' : ''}</td>
         </tr>`;
     });
     document.getElementById('drug-list').innerHTML = html;
 }
-window.onload = calculate;
+window.onload = updateFromAge;
 </script>
 </body>
 </html>
