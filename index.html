@@ -10,7 +10,7 @@
         .container { max-width: 600px; margin: auto; }
         header { text-align: center; padding: 20px; background: var(--card); border-radius: 0 0 20px 20px; border-bottom: 4px solid var(--primary); margin-bottom: 15px; }
         .input-section { display: flex; gap: 10px; margin-bottom: 15px; }
-        .input-box { background: var(--card); padding: 12px; border-radius: 12px; flex: 1; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+        .input-box { background: var(--card); padding: 12px; border-radius: 12px; flex: 1; box-shadow: 0 4px 6px rgba(0,0,0,0.3); position: relative; }
         label { display: block; font-size: 0.75rem; color: var(--primary); font-weight: bold; margin-bottom: 5px; }
         input { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #475569; background: #0f172a; color: white; font-size: 1.1rem; font-weight: bold; box-sizing: border-box; }
         section { margin-top: 15px; }
@@ -26,6 +26,7 @@
         .rescue-row { border-left: 4px solid var(--rescue); background: rgba(244, 63, 94, 0.1); }
         .infusion-row { border-left: 4px solid var(--accent); background: rgba(56, 189, 248, 0.1); }
         .badge { font-size: 0.65rem; padding: 2px 5px; border-radius: 4px; background: var(--rescue); color: white; margin-left: 5px; }
+        .obese-warning { color: var(--warn); font-size: 0.7rem; font-weight: bold; display: none; margin-top: 5px; }
     </style>
 </head>
 <body>
@@ -44,6 +45,7 @@
         <div class="input-box">
             <label>Weight (kg):</label>
             <input type="number" id="weight" value="50" oninput="calculate()">
+            <div id="obese-alert" class="obese-warning">⚠️ Dose Capped (Obesity)</div>
         </div>
     </div>
 
@@ -89,12 +91,10 @@
 function updateFromAge() {
     const age = parseFloat(document.getElementById('age').value) || 0;
     let avgWeight = 0;
-    
     if (age < 1) avgWeight = (age * 12 + 9) / 2;
     else if (age <= 8) avgWeight = (age * 2) + 8;
     else if (age < 18) avgWeight = (age * 3) + 7;
     else avgWeight = 70; 
-    
     document.getElementById('weight').value = avgWeight.toFixed(0);
     calculate();
 }
@@ -102,28 +102,34 @@ function updateFromAge() {
 function calculate() {
     const w = parseFloat(document.getElementById('weight').value) || 0;
     const age = parseFloat(document.getElementById('age').value) || 0;
+
+    // Safety Net: Ideal Body Weight (IBW) logic
+    let ibw = 0;
+    if (age < 1) ibw = (age * 12 + 9) / 2;
+    else if (age <= 8) ibw = (age * 2) + 8;
+    else if (age < 18) ibw = (age * 3) + 7;
+    else ibw = 70;
+
+    const isObese = w > (ibw * 1.3);
+    document.getElementById('obese-alert').style.display = isObese ? "block" : "none";
     
+    // Adjusted Body Weight (ABW) for Muscle Relaxants
+    const abw = isObese ? (ibw + 0.4 * (w - ibw)) : w;
+    const ventWeight = isObese ? ibw : w; // Protect lungs with IBW in obesity
+
     let ett = (age < 1) ? 3.5 : (age >= 12 ? 7.5 : (age / 4) + 3.5);
     let depth = (age < 1) ? 10 : (age >= 12 ? 21 : (age / 2) + 12);
     
     let suctionSize = Math.floor(ett * 2);
-    let suctionColor = "N/A";
-    if (suctionSize <= 6) suctionColor = "Light Green";
-    else if (suctionSize <= 8) suctionColor = "Blue";
-    else if (suctionSize <= 10) suctionColor = "Black";
-    else if (suctionSize <= 12) suctionColor = "White";
-    else if (suctionSize <= 14) suctionColor = "Green";
-    else suctionColor = "Orange";
+    let colors = { 6:"Light Green", 8:"Blue", 10:"Black", 12:"White", 14:"Green", 16:"Orange" };
+    let suctionColor = colors[suctionSize] || (suctionSize > 14 ? "Orange" : "N/A");
 
     document.getElementById('ett').innerText = ett.toFixed(1);
     document.getElementById('depth').innerText = depth.toFixed(0) + " cm";
     document.getElementById('suction').innerText = suctionSize + " Fr (" + suctionColor + ")";
-    document.getElementById('tv').innerText = (w * 7).toFixed(0) + "-" + (w * 8).toFixed(0);
+    document.getElementById('tv').innerText = (ventWeight * 6).toFixed(0) + "-" + (ventWeight * 8).toFixed(0);
     
-    let rr = "12-16";
-    if (age < 1) rr = "30-40";
-    else if (age < 5) rr = "20-25";
-    else if (age < 12) rr = "16-20";
+    let rr = age < 1 ? "30-40" : age < 5 ? "20-25" : age < 12 ? "16-20" : "12-16";
     document.getElementById('rr').innerText = rr;
 
     let maint = (w <= 10) ? (w * 4) : (w <= 20 ? (40 + (w-10)*2) : (60 + (w-20)));
@@ -133,26 +139,23 @@ function calculate() {
     document.getElementById('hrNext').innerText = (maint + (deficit/4)).toFixed(0) + " mL/h";
 
     const drugData = [
-        { name: "Adrenaline", prep: "1mL in 10mL", dose: w*0.01, unit: "mg", ml: (w*0.01/0.1), type: "rescue" },
+        { name: "Adrenaline", prep: "1mL in 10mL", dose: ibw*0.01, unit: "mg", ml: (ibw*0.01/0.1), type: "rescue" },
         { name: "Ephedrine (Bolus)", prep: "Amp in 10mL", dose: 10, unit: "mg", ml: 3.3, type: "rescue" },
-        { name: "Propofol (Induction)", prep: "200mg/20mL", dose: w*2, unit: "mg", ml: (w*2/10) },
-        { name: "Fentanyl", prep: "100mcg/10mL", dose: w*2, unit: "mcg", ml: (w*2/10) },
-        { name: "Atracurium", prep: "50mg/10mL", dose: w*0.5, unit: "mg", ml: (w*0.5/5) },
-        { name: "Neostigmine", prep: "1 ml in 10mL", dose: w*0.05, unit: "mg", ml: (w*0.05/0.5) },
-        { name: "Atropine", prep: "1 ml in 10mL", dose: w*0.01, unit: "mg", ml: (w*0.01/0.1) },
+        { name: "Propofol (Induction)", prep: "200mg/20mL", dose: ibw*2, unit: "mg", ml: (ibw*2/10) },
+        { name: "Fentanyl", prep: "100mcg/10mL", dose: ibw*1, unit: "mcg", ml: (ibw*1/10) },
+        { name: "Atracurium", prep: "50mg/10mL", dose: abw*0.5, unit: "mg", ml: (abw*0.5/5) },
+        { name: "Neostigmine", prep: "1 amp in 10mL", dose: w*0.05, unit: "mg", ml: (w*0.05/0.5) },
+        { name: "Atropine", prep: "1 amp in 10mL", dose: w*0.01, unit: "mg", ml: (w*0.01/0.1) },
         { name: "Noradrenaline (Inf)", prep: "8mg in 50mL", dose: 0.05, unit: "mcg/kg/m", ml: (0.05*w*60/160), type: "inf" },
-        { name: "Dexmedetomidine (Inf)", prep: "50mcg in 50mL", dose: 0.5, unit: "mcg/kg/h", ml: (0.5*w/1), type: "inf" },
-        { name: "Midazolam (Bolus)", prep: "5mg/5mL", dose: w*0.05, unit: "mg", ml: (w*0.05/1) },
-        { name: "Ketamine", prep: "100mg/10mL", dose: w*1.5, unit: "mg", ml: (w*1.5/10) },
+        { name: "Dexmedetomidine (Inf)", prep: "50mcg in 50mL", dose: 0.2, unit: "mcg/kg/h", ml: (0.2*w/1), type: "inf" },
+        { name: "Midazolam (Bolus)", prep: "5mg/5mL", dose: ibw*0.05, unit: "mg", ml: (ibw*0.05/1) },
+        { name: "Ketamine", prep: "100mg/10mL", dose: ibw*1.5, unit: "mg", ml: (ibw*1.5/10) },
         { name: "Paracetamol", prep: "1000mg/100mL", dose: w*15, unit: "mg", ml: (w*15/10) }
     ];
 
     let html = "";
     drugData.forEach(d => {
-        let rowClass = "";
-        if(d.type === 'inf') rowClass = "infusion-row";
-        if(d.type === 'rescue') rowClass = "rescue-row";
-
+        let rowClass = d.type === 'inf' ? 'infusion-row' : d.type === 'rescue' ? 'rescue-row' : '';
         html += `<tr class="${rowClass}">
             <td><b>${d.name}</b>${d.type==='rescue'?'<span class="badge">RESCUE</span>':''}<br><small>${d.prep}</small></td>
             <td>${d.dose.toFixed(1)} ${d.unit}</td>
