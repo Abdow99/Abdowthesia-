@@ -87,7 +87,7 @@
         .data-box { background: #f8f9fa; padding: 12px; border-radius: 10px; border: 1px solid #e9ecef; }
         .label { font-size: 0.7rem; color: var(--gray); font-weight: 700; text-transform: uppercase; margin-bottom: 4px; }
         .val { font-size: 1.2rem; font-weight: 800; color: var(--text-dark); }
-        .val-highlight { color: var(--primary); font-size: 1.3rem; }
+        .val-highlight { color: var(--primary); font-size: 1.3rem; font-weight: 800; }
 
         table { width: 100%; border-collapse: collapse; margin-top: 5px; }
         th { text-align: left; font-size: 0.7rem; color: var(--gray); border-bottom: 2px solid #edf2f4; padding: 10px 4px; font-weight: 800; text-transform: uppercase; }
@@ -105,18 +105,6 @@
         .alert-warn { background: #ffbe0b; color: #000; }
         .alert-peds { background: var(--primary); color: #fff; border: 1px solid rgba(255,255,255,0.3); }
 
-        .footer-note { 
-            margin-top: 40px; 
-            padding: 20px; 
-            background: #ffffff; 
-            border-radius: 15px; 
-            text-align: left; 
-            font-size: 0.85rem; 
-            color: #2b2d42; 
-            line-height: 1.6;
-            box-shadow: var(--shadow);
-        }
-
         .btn-save {
             width: 100%;
             padding: 18px;
@@ -130,6 +118,17 @@
             margin-top: 25px;
             box-shadow: 0 4px 15px rgba(239, 35, 60, 0.4);
             text-transform: uppercase;
+        }
+
+        .footer-note { 
+            margin-top: 25px; 
+            padding: 15px; 
+            background: transparent; 
+            text-align: left; 
+            font-size: 0.75rem; 
+            color: var(--gray); 
+            line-height: 1.4;
+            opacity: 0.8;
         }
     </style>
 </head>
@@ -160,22 +159,24 @@
         <div class="card grid-3">
             <div class="data-box"><div class="label">HR</div><div id="norm-hr" class="val">--</div></div>
             <div class="data-box"><div class="label">SBP</div><div id="norm-bp" class="val">--</div></div>
-            <div class="data-box"><div class="label">RR</div><div id="norm-rr" class="val">--</div></div>
+            <div class="data-box"><div class="label">Normal RR</div><div id="norm-rr" class="val">--</div></div>
         </div>
     </section>
 
     <section>
-        <div class="section-title">🌬️ Airway</div>
-        <div class="card grid-2">
+        <div class="section-title">🌬️ Airway & Vent Parameters</div>
+        <div class="card grid-3">
             <div class="data-box"><div class="label">ETT Size</div><div id="ett-size" class="val">--</div></div>
             <div class="data-box"><div class="label">Suction</div><div id="suction" class="val">--</div></div>
             <div class="data-box"><div class="label">Depth</div><div id="depth" class="val">--</div></div>
             <div class="data-box"><div class="label">Blade</div><div id="blade" class="val">--</div></div>
+            <div class="data-box"><div class="label">Vent RR</div><div id="vent-rr" class="val">--</div></div>
+            <div class="data-box"><div class="label">VT (6-8ml/kg)</div><div id="tidal-vol" class="val" style="font-size: 1.1rem;">--</div></div>
         </div>
     </section>
 
     <section>
-        <div class="section-title">💧 Fluids (15 gtt/ml)</div>
+        <div class="section-title">💧 Fluids (15 drops/ml)</div>
         <div class="card grid-3">
             <div class="data-box">
                 <div class="label">Maint/H</div>
@@ -212,25 +213,21 @@
     </section>
 
     <section>
-        <div class="section-title">⚠️ Local Anesthesia Max</div>
+        <div class="section-title">⚠️ Regional Anesthesia Max</div>
         <div class="card grid-2">
             <div class="data-box"><div class="label">Lidocaine (3mg/kg)</div><div id="la-lido" class="val">--</div></div>
             <div class="data-box"><div class="label">Marcaine (2mg/kg)</div><div id="la-marcaine" class="val">--</div></div>
         </div>
     </section>
-
-    <div class="footer-note">
-        <strong>Medical Disclaimer:</strong> This application is designed as a calculation aid for healthcare professionals. It is provided for informational purposes only and may contain errors. Always double-check calculations and verify doses according to clinical guidelines and local hospital protocols. The developer is not legally responsible for any clinical decisions or medical errors resulting from the use of this tool.
-        <br><br>
-        <strong>Feedback & Reports:</strong> For suggestions or to report errors, please contact:
-        <br>
-        <strong>Dr. Abdow</strong> | <a href="https://wa.me/201550086024" style="color:var(--primary); text-decoration:none; font-weight:800;">WhatsApp: +201550086024</a>
-    </div>
-
 </div>
 
 <div class="container">
     <button class="btn-save" onclick="saveAsImage()">📸 Save Clinical Summary</button>
+    <div class="footer-note">
+        <strong>Medical Disclaimer:</strong> This application is designed as a calculation aid for healthcare professionals. It is provided for informational purposes only and may contain errors. Always double-check calculations and verify doses according to clinical guidelines and local hospital protocols. The developer is not legally responsible for any clinical decisions or medical errors resulting from the use of this tool.
+        <br><br>
+        <strong>Feedback & Reports:</strong> For suggestions or to report errors, contact <strong>Dr. Abdow</strong> | <a href="https://wa.me/201550086024" style="color:var(--gray); text-decoration:underline;">WhatsApp: +201550086024</a>
+    </div>
 </div>
 
 <script>
@@ -241,7 +238,7 @@ function updateFromAge() {
     else if (age <= 8) avgWeight = (age * 2) + 8;
     else if (age < 18) avgWeight = (age * 3) + 7;
     else avgWeight = 70;
-    document.getElementById('weight').value = avgWeight.toFixed(1);
+    document.getElementById('weight').value = avgWeight.toFixed( avgWeight % 1 === 0 ? 0 : 1 );
     calculate();
 }
 
@@ -249,8 +246,8 @@ function getDripRate(mlPerHour) {
     if (!mlPerHour || mlPerHour <= 0) return "--";
     const dropsPerSec = (mlPerHour * 15) / 3600;
     const secondsPerDrop = 1 / dropsPerSec;
-    if (dropsPerSec >= 1) return `💧 ${dropsPerSec.toFixed(1)} gtt/sec`;
-    else return `💧 1 gtt / ${secondsPerDrop.toFixed(0)}s`;
+    if (dropsPerSec >= 1) return `💧 ${dropsPerSec.toFixed(1)} drops/sec`;
+    else return `💧 1 drop / ${secondsPerDrop.toFixed(0)}s`;
 }
 
 function calculate() {
@@ -258,40 +255,53 @@ function calculate() {
     const age = parseFloat(document.getElementById('age').value) || 0;
     const isPeds = (age < 12 || w < 40);
     document.getElementById('peds-alert').style.display = isPeds ? 'block' : 'none';
+    
+    // IBW Calculation for Volutrauma protection
     let ibw = 70; 
-    if(age < 18) ibw = w;
-    if(age >= 12 && w > 80) ibw = 70; 
-    const isObese = (w > ibw * 1.3 && age > 12);
+    if (age < 1) ibw = (age * 12 + 9) / 2; 
+    else if (age <= 8) ibw = (age * 2) + 8;
+    else if (age < 18) ibw = (age * 3) + 7;
+    else ibw = 70;
+
+    const isObese = (w > ibw * 1.3 && age >= 12);
     document.getElementById('obese-alert').style.display = isObese ? 'block' : 'none';
     const abw = isObese ? (ibw + 0.4 * (w - ibw)) : w;
     const doseW = isObese ? ibw : w;
 
+    let ettVal = 0;
     let ettText = ""; let suctionText = ""; let bladeText = "";
-    if (age < 0.1) { ettText = "2.5"; suctionText = "6 Fr (Green)"; bladeText = "Miller 0"; }
-    else if (age < 0.5) { ettText = "3.0"; suctionText = "6 Fr (Green)"; bladeText = "Miller 0/1"; }
-    else if (age < 1.0) { ettText = "3.5"; suctionText = "6 Fr (Green)"; bladeText = "Mac 1"; }
-    else if (age < 2.0) { ettText = "4.0"; suctionText = "8 Fr (Blue)"; bladeText = "Mac 1/2"; }
-    else if (age < 4.0) { ettText = "4.5"; suctionText = "8 Fr (Blue)"; bladeText = "Mac 2"; }
-    else if (age < 5.5) { ettText = "5.0"; suctionText = "10 Fr (Black)"; bladeText = "Mac 2"; }
-    else if (age < 7.0) { ettText = "5.5"; suctionText = "10 Fr (Black)"; bladeText = "Mac 2"; }
-    else if (age < 10.0) { ettText = "6.0"; suctionText = "10 Fr (Black)"; bladeText = "Mac 2/3"; }
-    else if (age < 14.0) { ettText = "6.5"; suctionText = "10 Fr (Black)"; bladeText = "Mac 3"; }
-    else if (age < 18.0) { ettText = "6.5 - 7.0"; suctionText = "12 Fr (White)"; bladeText = "Mac 3"; }
-    else { ettText = "7.0 - 7.5"; suctionText = "12 W - 14 G"; bladeText = "Mac 3/4"; }
+    if (age < 0.1) { ettVal = 2.5; ettText = "2.5"; suctionText = "6 Fr (Green)"; bladeText = "Miller 0"; }
+    else if (age < 0.5) { ettVal = 3.0; ettText = "3.0"; suctionText = "6 Fr (Green)"; bladeText = "Miller 0/1"; }
+    else if (age < 1.0) { ettVal = 3.5; ettText = "3.5"; suctionText = "6 Fr (Green)"; bladeText = "Mac 1"; }
+    else if (age < 2.0) { ettVal = 4.0; ettText = "4.0"; suctionText = "8 Fr (Blue)"; bladeText = "Mac 1/2"; }
+    else if (age < 4.0) { ettVal = 4.5; ettText = "4.5"; suctionText = "8 Fr (Blue)"; bladeText = "Mac 2"; }
+    else if (age < 5.5) { ettVal = 5.0; ettText = "5.0"; suctionText = "10 Fr (Black)"; bladeText = "Mac 2"; }
+    else if (age < 7.0) { ettVal = 5.5; ettText = "5.5"; suctionText = "10 Fr (Black)"; bladeText = "Mac 2"; }
+    else if (age < 10.0) { ettVal = 6.0; ettText = "6.0"; suctionText = "10 Fr (Black)"; bladeText = "Mac 2/3"; }
+    else if (age < 14.0) { ettVal = 6.5; ettText = "6.5"; suctionText = "10 Fr (Black)"; bladeText = "Mac 3"; }
+    else if (age < 18.0) { ettVal = 7.0; ettText = "6.5 - 7.0"; suctionText = "12 Fr (White)"; bladeText = "Mac 3"; }
+    else { ettVal = 7.5; ettText = "7.0 - 7.5"; suctionText = "12 W - 14 G"; bladeText = "Mac 3/4"; }
 
+    let depthVal = (age < 0.1) ? w + 6 : (age >= 18 ? 3 * ettVal : (age / 2) + 12);
     document.getElementById('ett-size').innerText = ettText;
     document.getElementById('suction').innerText = suctionText;
     document.getElementById('blade').innerText = bladeText;
-    document.getElementById('depth').innerText = (age < 1 ? 10 : (age >= 12 ? 21 : (age / 2) + 12)).toFixed(0) + " cm";
+    document.getElementById('depth').innerText = depthVal.toFixed(0) + " cm";
 
-    let hr="60-100", bp="120/80", rr="12-16";
-    if(age<1) { hr="120-160"; bp="70/40"; rr="30-50"; }
-    else if(age<3) { hr="100-140"; bp="90/50"; rr="25-35"; }
-    else if(age<8) { hr="80-120"; bp="100/60"; rr="20-30"; }
-    else if(age<12) { hr="70-110"; bp="110/70"; rr="18-24"; }
+    let hr="60-100", bp="120/80", rr="12-16", vrr="12-14";
+    if(age<1) { hr="120-160"; bp="70/40"; rr="30-50"; vrr="25-30"; }
+    else if(age<3) { hr="100-140"; bp="90/50"; rr="25-35"; vrr="20-25"; }
+    else if(age<8) { hr="80-120"; bp="100/60"; rr="20-30"; vrr="18-20"; }
+    else if(age<12) { hr="70-110"; bp="110/70"; rr="18-24"; vrr="14-16"; }
     document.getElementById('norm-hr').innerText = hr;
     document.getElementById('norm-bp').innerText = bp;
     document.getElementById('norm-rr').innerText = rr;
+    document.getElementById('vent-rr').innerText = vrr;
+    
+    // Tidal Volume based on IBW
+    let vtMin = ibw * 6;
+    let vtMax = ibw * 8;
+    document.getElementById('tidal-vol').innerText = `${vtMin.toFixed(0)}-${vtMax.toFixed(0)} mL`;
 
     let maint = (w <= 10) ? (w * 4) : (w <= 20 ? (40 + (w-10)*2) : (60 + (w-20)));
     let deficit = maint * 6;
@@ -303,6 +313,18 @@ function calculate() {
     document.getElementById('hr1-drip').innerText = getDripRate(rateHr1);
     document.getElementById('hrNext').innerText = rateHrNext.toFixed(0) + " mL/h";
     document.getElementById('hrNext-drip').innerText = getDripRate(rateHrNext);
+
+    // Atropine Specific Calculation Logic
+    let atropineMg = 0;
+    if (age < 18) {
+        atropineMg = w * 0.02;
+        if (atropineMg < 0.1) atropineMg = 0.1;
+        if (atropineMg > 0.5) atropineMg = 0.5;
+    } else {
+        atropineMg = w * 0.01;
+        if (atropineMg < 0.5) atropineMg = 0.5;
+        if (atropineMg > 1.0) atropineMg = 1.0;
+    }
 
     let ephDose = (age > 12) ? 5 : (w * 0.1);
     let propDoseMg = (age < 12) ? (w*3) : (doseW*2);
@@ -318,7 +340,7 @@ function calculate() {
         { cat: "Induction", name: "Dexamethasone", prep: "4mg in 10mL (0.4mg/mL)", dose: Math.min(w*0.15, 8), unit: "mg", ml: Math.min(w*0.15, 8)/0.4 },
         { cat: "Induction", name: "Hydrocortisone", prep: "100mg in 10mL (10mg/mL)", dose: w*4, unit: "mg", ml: (w*4)/10 },
         { cat: "Reversal", name: "Neostigmine", prep: "Amp in 10mL (0.5mg/mL)", dose: w*0.05, unit: "mg", ml: (w*0.05)/0.5 },
-        { cat: "Reversal", name: "Atropine", prep: "Amp in 10mL (0.1mg/mL)", dose: w*0.02, unit: "mg", ml: (w*0.02)/0.1 },
+        { cat: "Reversal", name: "Atropine", prep: "Amp in 10mL (0.1mg/mL)", dose: atropineMg, unit: "mg", ml: atropineMg/0.1 },
         { cat: "Reversal", name: "Sugammadex", prep: "100mg/mL", dose: w*2, unit: "mg", ml: (w*2)/100 },
         { cat: "Infusion", name: "Noradrenaline", prep: "8mg in 50mL (160mcg/mL)", dose: 0.05, unit: "mcg/kg/min", ml: (0.05*w*60)/160, isRate: true },
         { cat: "Infusion", name: "Dexmedetomidine", prep: "50mcg in 50mL (1mcg/mL)", dose: 0.2, unit: "mcg/kg/h", ml: (0.2*w)/1, isRate: true },
