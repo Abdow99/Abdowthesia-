@@ -4,165 +4,353 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Abdowthesia Pro</title>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <style>
-        :root { --primary: #20c997; --bg: #0f172a; --card: #1e293b; --text: #f8fafc; --accent: #38bdf8; --warn: #fb7185; --rescue: #f43f5e; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); color: var(--text); padding: 10px; margin: 0; line-height: 1.4; }
-        .container { max-width: 600px; margin: auto; }
-        header { text-align: center; padding: 20px; background: var(--card); border-radius: 0 0 20px 20px; border-bottom: 4px solid var(--primary); margin-bottom: 15px; }
-        .input-section { display: flex; gap: 10px; margin-bottom: 15px; }
-        .input-box { background: var(--card); padding: 12px; border-radius: 12px; flex: 1; box-shadow: 0 4px 6px rgba(0,0,0,0.3); position: relative; }
-        label { display: block; font-size: 0.75rem; color: var(--primary); font-weight: bold; margin-bottom: 5px; }
-        input { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #475569; background: #0f172a; color: white; font-size: 1.1rem; font-weight: bold; box-sizing: border-box; }
-        section { margin-top: 15px; }
-        .section-title { color: var(--primary); font-size: 0.9rem; font-weight: bold; text-transform: uppercase; margin-bottom: 8px; letter-spacing: 1px; }
-        .card { background: var(--card); border-radius: 12px; padding: 12px; margin-bottom: 10px; }
-        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; text-align: center; }
-        .label { font-size: 0.75rem; color: #94a3b8; }
-        .val { font-size: 1rem; font-weight: bold; color: var(--accent); }
+        :root { 
+            --primary: #ef233c;      /* Clinical Red */
+            --bg: #1a1a1a;           /* Deep Dark Background */
+            --card-bg: #ffffff;      /* Pure White Cards */
+            --text-dark: #2b2d42;    /* Dark Text for inside cards */
+            --text-light: #f8f9fa;   /* Light Text for dark background */
+            --gray: #8d99ae;
+            --shadow: 0 10px 20px rgba(0,0,0,0.3);
+            --border-radius: 14px;
+        }
+
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            background: var(--bg); 
+            color: var(--text-light); 
+            padding: 15px; 
+            margin: 0; 
+            line-height: 1.4; 
+        }
+
+        .container { max-width: 600px; margin: auto; padding-bottom: 50px; }
+
+        header { 
+            text-align: center; 
+            padding: 25px 20px; 
+            background: var(--card-bg); 
+            border-radius: 20px; 
+            border-bottom: 6px solid var(--primary);
+            box-shadow: var(--shadow);
+            margin-bottom: 25px; 
+            color: var(--text-dark);
+        }
+        
+        h1 { margin: 0; color: var(--primary); font-size: 2rem; letter-spacing: -0.5px; }
+        .subtitle { color: var(--gray); font-size: 0.9rem; font-weight: 600; }
+
+        .input-section { display: flex; gap: 12px; margin-bottom: 20px; }
+        .input-box { 
+            background: var(--card-bg); 
+            padding: 15px; 
+            border-radius: var(--border-radius); 
+            flex: 1; 
+            box-shadow: var(--shadow); 
+            color: var(--text-dark);
+        }
+        
+        label { display: block; font-size: 0.75rem; color: var(--primary); font-weight: 800; margin-bottom: 8px; text-transform: uppercase; }
+        input { 
+            width: 100%; 
+            padding: 10px; 
+            border-radius: 10px; 
+            border: 2px solid #edf2f4; 
+            background: #f1f3f5; 
+            color: var(--text-dark); 
+            font-size: 1.5rem; 
+            font-weight: 900; 
+            box-sizing: border-box; 
+            text-align: center;
+        }
+
+        section { margin-top: 25px; }
+        .section-title { 
+            color: var(--text-light); 
+            font-size: 1.1rem; 
+            font-weight: 800; 
+            margin-bottom: 12px; 
+            display: flex; 
+            align-items: center; 
+            gap: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .section-title::before { content: ''; display: block; width: 6px; height: 18px; background: var(--primary); border-radius: 3px; }
+
+        .card { background: var(--card-bg); border-radius: var(--border-radius); padding: 18px; box-shadow: var(--shadow); color: var(--text-dark); }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; text-align: center; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; text-align: center; }
+
+        .data-box { background: #f8f9fa; padding: 12px; border-radius: 10px; border: 1px solid #e9ecef; }
+        .label { font-size: 0.7rem; color: var(--gray); font-weight: 700; text-transform: uppercase; margin-bottom: 4px; }
+        .val { font-size: 1.2rem; font-weight: 800; color: var(--text-dark); }
+        .val-highlight { color: var(--primary); font-size: 1.3rem; }
+
         table { width: 100%; border-collapse: collapse; margin-top: 5px; }
-        th { text-align: left; font-size: 0.75rem; color: #94a3b8; border-bottom: 1px solid #334155; padding: 5px; }
-        td { padding: 10px 5px; border-bottom: 1px solid #334155; font-size: 0.85rem; vertical-align: middle; }
-        .ml-col { color: var(--warn); font-weight: bold; font-size: 1.1rem; text-align: right; }
-        .rescue-row { border-left: 4px solid var(--rescue); background: rgba(244, 63, 94, 0.1); }
-        .infusion-row { border-left: 4px solid var(--accent); background: rgba(56, 189, 248, 0.1); }
-        .badge { font-size: 0.65rem; padding: 2px 5px; border-radius: 4px; background: var(--rescue); color: white; margin-left: 5px; }
-        .obese-warning { color: var(--warn); font-size: 0.7rem; font-weight: bold; display: none; margin-top: 5px; }
+        th { text-align: left; font-size: 0.7rem; color: var(--gray); border-bottom: 2px solid #edf2f4; padding: 10px 4px; font-weight: 800; text-transform: uppercase; }
+        td { padding: 14px 4px; border-bottom: 1px solid #f1f3f5; font-size: 0.95rem; vertical-align: middle; color: var(--text-dark); }
+        
+        .drug-name { font-weight: 800; display: block; color: var(--text-dark); }
+        .drug-prep { font-size: 0.75rem; color: var(--gray); font-weight: 500; }
+        .ml-col { color: var(--primary); font-weight: 900; font-size: 1.15rem; text-align: right; }
+        
+        .drops-text { display: block; font-size: 0.75rem; color: #555; margin-top: 4px; font-weight: 700; font-style: italic; background: #fff3cd; padding: 2px 4px; border-radius: 4px; display: inline-block; }
+
+        .cat-row td { background: #f1f3f5; color: var(--text-dark); font-weight: 900; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1.2px; padding: 8px 12px; border-left: 4px solid var(--primary); }
+
+        .alert { padding: 12px; border-radius: 10px; margin-top: 15px; font-size: 0.85rem; font-weight: 800; display: none; text-align: center; box-shadow: var(--shadow); }
+        .alert-warn { background: #ffbe0b; color: #000; }
+        .alert-info { background: #3a86ff; color: #fff; }
+
+        .footer-note { 
+            margin-top: 40px; 
+            padding: 20px; 
+            background: #ffffff; 
+            border-radius: 15px; 
+            text-align: left; 
+            font-size: 0.85rem; 
+            color: #2b2d42; 
+            line-height: 1.6;
+            box-shadow: var(--shadow);
+        }
+
+        .btn-save {
+            width: 100%;
+            padding: 18px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            font-size: 1.1rem;
+            font-weight: 900;
+            cursor: pointer;
+            margin-top: 25px;
+            box-shadow: 0 4px 15px rgba(239, 35, 60, 0.4);
+            text-transform: uppercase;
+        }
     </style>
 </head>
 <body>
 
-<div class="container">
+<div class="container" id="app-content">
     <header>
-        <h1 style="margin:0; font-size: 1.5rem; color: var(--primary);">Abdowthesia</h1>
-        <small style="color: #94a3b8;">Senior Consultant Decision Support</small>
+        <h1>Abdowthesia Pro</h1>
+        <div class="subtitle">Pediatric & Adult Anesthesia Guide</div>
     </header>
 
     <div class="input-section">
         <div class="input-box">
-            <label>Age (Years):</label>
-            <input type="number" id="age" value="15" oninput="updateFromAge()">
+            <label>Patient Age (Y)</label>
+            <input type="number" id="age" value="5" oninput="updateFromAge()" step="0.1">
         </div>
         <div class="input-box">
-            <label>Weight (kg):</label>
-            <input type="number" id="weight" value="50" oninput="calculate()">
-            <div id="obese-alert" class="obese-warning">⚠️ Dose Capped (Obesity)</div>
+            <label>Weight (kg)</label>
+            <input type="number" id="weight" value="20" oninput="calculate()">
         </div>
     </div>
+    
+    <div id="peds-alert" class="alert alert-info">👶 Pediatric Dosing & Equipment Active</div>
+    <div id="obese-alert" class="alert alert-warn">⚠️ Obesity: Doses Adjusted to IBW/ABW</div>
 
     <section>
-        <div class="section-title">🌬️ Airway & Ventilation</div>
+        <div class="section-title">❤️ Vitals</div>
         <div class="card grid-3">
-            <div><div class="label">ETT Size</div><div id="ett" class="val">--</div></div>
-            <div><div class="label">Depth (cm)</div><div id="depth" class="val">--</div></div>
-            <div><div class="label">Suction</div><div id="suction" class="val">--</div></div>
-            <div><div class="label">TV (mL)</div><div id="tv" class="val">--</div></div>
-            <div><div class="label">RR (bpm)</div><div id="rr" class="val">--</div></div>
-            <div><div class="label">MAC (Sevo)</div><div class="val">2.0%</div></div>
+            <div class="data-box"><div class="label">HR</div><div id="norm-hr" class="val">--</div></div>
+            <div class="data-box"><div class="label">SBP</div><div id="norm-bp" class="val">--</div></div>
+            <div class="data-box"><div class="label">RR</div><div id="norm-rr" class="val">--</div></div>
         </div>
     </section>
 
     <section>
-        <div class="section-title">💧 Fluids (Holliday-Segar)</div>
-        <div class="card grid-3">
-            <div><div class="label">Maint (hr)</div><div id="maint" class="val">--</div></div>
-            <div><div class="label">1st Hour</div><div id="hr1" class="val">--</div></div>
-            <div><div class="label">Next 2 hrs</div><div id="hrNext" class="val">--</div></div>
+        <div class="section-title">🌬️ Airway</div>
+        <div class="card grid-2">
+            <div class="data-box"><div class="label">ETT Size</div><div id="ett-size" class="val">--</div></div>
+            <div class="data-box"><div class="label">Suction</div><div id="suction" class="val">--</div></div>
+            <div class="data-box"><div class="label">Depth</div><div id="depth" class="val">--</div></div>
+            <div class="data-box"><div class="label">Blade</div><div id="blade" class="val">--</div></div>
         </div>
     </section>
 
     <section>
-        <div class="section-title">💉 Drug Calculator (Local Dilutions)</div>
+        <div class="section-title">💧 Fluids (15 gtt/ml)</div>
+        <div class="card grid-3">
+            <div class="data-box">
+                <div class="label">Maint/H</div>
+                <div id="maint" class="val">--</div>
+                <div id="maint-drip" class="drops-text">--</div>
+            </div>
+            <div class="data-box">
+                <div class="label">1st Hour</div>
+                <div id="hr1" class="val-highlight">--</div>
+                <div id="hr1-drip" class="drops-text">--</div>
+            </div>
+            <div class="data-box">
+                <div class="label">Next Hr</div>
+                <div id="hrNext" class="val">--</div>
+                <div id="hrNext-drip" class="drops-text">--</div>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <div class="section-title">💉 Medications</div>
         <div class="card">
             <table>
                 <thead>
                     <tr>
-                        <th>Drug (Concentration)</th>
-                        <th>Dose</th>
-                        <th style="text-align:right">Volume (mL)</th>
+                        <th style="width:55%">Drug (Dilution)</th>
+                        <th style="width:20%">Dose</th>
+                        <th style="width:25%; text-align:right">Vol</th>
                     </tr>
                 </thead>
                 <tbody id="drug-list"></tbody>
             </table>
         </div>
     </section>
+
+    <section>
+        <div class="section-title">⚠️ Local Anesthesia Max</div>
+        <div class="card grid-2">
+            <div class="data-box"><div class="label">Lidocaine (3mg/kg)</div><div id="la-lido" class="val">--</div></div>
+            <div class="data-box"><div class="label">Marcaine (2mg/kg)</div><div id="la-marcaine" class="val">--</div></div>
+        </div>
+    </section>
+
+    <div class="footer-note">
+        <strong>Medical Disclaimer:</strong> This application is designed as a calculation aid for healthcare professionals. It is provided for informational purposes only and may contain errors. Always double-check calculations and verify doses according to clinical guidelines and local hospital protocols. The developer is not legally responsible for any clinical decisions or medical errors resulting from the use of this tool.
+        <br><br>
+        <strong>Feedback & Reports:</strong> For suggestions or to report errors, please contact:
+        <br>
+        <strong>Dr. Abdow</strong> | <a href="https://wa.me/201550086024" style="color:var(--primary); text-decoration:none; font-weight:800;">WhatsApp: +201550086024</a>
+    </div>
+
+</div>
+
+<div class="container">
+    <button class="btn-save" onclick="saveAsImage()">📸 Save Clinical Summary</button>
 </div>
 
 <script>
 function updateFromAge() {
     const age = parseFloat(document.getElementById('age').value) || 0;
     let avgWeight = 0;
-    if (age < 1) avgWeight = (age * 12 + 9) / 2;
+    if (age < 1) avgWeight = (age * 12 + 9) / 2; 
     else if (age <= 8) avgWeight = (age * 2) + 8;
     else if (age < 18) avgWeight = (age * 3) + 7;
-    else avgWeight = 70; 
-    document.getElementById('weight').value = avgWeight.toFixed(0);
+    else avgWeight = 70;
+    document.getElementById('weight').value = avgWeight.toFixed(1);
     calculate();
+}
+
+function getDripRate(mlPerHour) {
+    if (!mlPerHour || mlPerHour <= 0) return "--";
+    const dropsPerSec = (mlPerHour * 15) / 3600;
+    const secondsPerDrop = 1 / dropsPerSec;
+    if (dropsPerSec >= 1) return `💧 ${dropsPerSec.toFixed(1)} gtt/sec`;
+    else return `💧 1 gtt / ${secondsPerDrop.toFixed(0)}s`;
 }
 
 function calculate() {
     const w = parseFloat(document.getElementById('weight').value) || 0;
     const age = parseFloat(document.getElementById('age').value) || 0;
-
-    // Safety Net: Ideal Body Weight (IBW) logic
-    let ibw = 0;
-    if (age < 1) ibw = (age * 12 + 9) / 2;
-    else if (age <= 8) ibw = (age * 2) + 8;
-    else if (age < 18) ibw = (age * 3) + 7;
-    else ibw = 70;
-
-    const isObese = w > (ibw * 1.3);
-    document.getElementById('obese-alert').style.display = isObese ? "block" : "none";
-    
-    // Adjusted Body Weight (ABW) for Muscle Relaxants
+    const isPeds = (age < 12 || w < 40);
+    document.getElementById('peds-alert').style.display = isPeds ? 'block' : 'none';
+    let ibw = 70; 
+    if(age < 18) ibw = w;
+    if(age >= 12 && w > 80) ibw = 70; 
+    const isObese = (w > ibw * 1.3 && age > 12);
+    document.getElementById('obese-alert').style.display = isObese ? 'block' : 'none';
     const abw = isObese ? (ibw + 0.4 * (w - ibw)) : w;
-    const ventWeight = isObese ? ibw : w; // Protect lungs with IBW in obesity
+    const doseW = isObese ? ibw : w;
 
-    let ett = (age < 1) ? 3.5 : (age >= 12 ? 7.5 : (age / 4) + 3.5);
-    let depth = (age < 1) ? 10 : (age >= 12 ? 21 : (age / 2) + 12);
-    
-    let suctionSize = Math.floor(ett * 2);
-    let colors = { 6:"Light Green", 8:"Blue", 10:"Black", 12:"White", 14:"Green", 16:"Orange" };
-    let suctionColor = colors[suctionSize] || (suctionSize > 14 ? "Orange" : "N/A");
+    let ettText = ""; let suctionText = ""; let bladeText = "";
+    if (age < 0.1) { ettText = "2.5"; suctionText = "6 Fr (Green)"; bladeText = "Miller 0"; }
+    else if (age < 0.5) { ettText = "3.0"; suctionText = "6 Fr (Green)"; bladeText = "Miller 0/1"; }
+    else if (age < 1.0) { ettText = "3.5"; suctionText = "6 Fr (Green)"; bladeText = "Mac 1"; }
+    else if (age < 2.0) { ettText = "4.0"; suctionText = "8 Fr (Blue)"; bladeText = "Mac 1/2"; }
+    else if (age < 4.0) { ettText = "4.5"; suctionText = "8 Fr (Blue)"; bladeText = "Mac 2"; }
+    else if (age < 5.5) { ettText = "5.0"; suctionText = "10 Fr (Black)"; bladeText = "Mac 2"; }
+    else if (age < 7.0) { ettText = "5.5"; suctionText = "10 Fr (Black)"; bladeText = "Mac 2"; }
+    else if (age < 10.0) { ettText = "6.0"; suctionText = "10 Fr (Black)"; bladeText = "Mac 2/3"; }
+    else if (age < 14.0) { ettText = "6.5"; suctionText = "10 Fr (Black)"; bladeText = "Mac 3"; }
+    else if (age < 18.0) { ettText = "6.5 - 7.0"; suctionText = "12 Fr (White)"; bladeText = "Mac 3"; }
+    else { ettText = "7.0 - 7.5"; suctionText = "12 W - 14 G"; bladeText = "Mac 3/4"; }
 
-    document.getElementById('ett').innerText = ett.toFixed(1);
-    document.getElementById('depth').innerText = depth.toFixed(0) + " cm";
-    document.getElementById('suction').innerText = suctionSize + " Fr (" + suctionColor + ")";
-    document.getElementById('tv').innerText = (ventWeight * 6).toFixed(0) + "-" + (ventWeight * 8).toFixed(0);
-    
-    let rr = age < 1 ? "30-40" : age < 5 ? "20-25" : age < 12 ? "16-20" : "12-16";
-    document.getElementById('rr').innerText = rr;
+    document.getElementById('ett-size').innerText = ettText;
+    document.getElementById('suction').innerText = suctionText;
+    document.getElementById('blade').innerText = bladeText;
+    document.getElementById('depth').innerText = (age < 1 ? 10 : (age >= 12 ? 21 : (age / 2) + 12)).toFixed(0) + " cm";
+
+    let hr="60-100", bp="120/80", rr="12-16";
+    if(age<1) { hr="120-160"; bp="70/40"; rr="30-50"; }
+    else if(age<3) { hr="100-140"; bp="90/50"; rr="25-35"; }
+    else if(age<8) { hr="80-120"; bp="100/60"; rr="20-30"; }
+    else if(age<12) { hr="70-110"; bp="110/70"; rr="18-24"; }
+    document.getElementById('norm-hr').innerText = hr;
+    document.getElementById('norm-bp').innerText = bp;
+    document.getElementById('norm-rr').innerText = rr;
 
     let maint = (w <= 10) ? (w * 4) : (w <= 20 ? (40 + (w-10)*2) : (60 + (w-20)));
     let deficit = maint * 6;
-    document.getElementById('maint').innerText = maint + " mL/h";
-    document.getElementById('hr1').innerText = (maint + (deficit/2)).toFixed(0) + " mL";
-    document.getElementById('hrNext').innerText = (maint + (deficit/4)).toFixed(0) + " mL/h";
+    let rateHr1 = maint + (deficit/2);
+    let rateHrNext = maint + (deficit/4);
+    document.getElementById('maint').innerText = maint.toFixed(0) + " mL/h";
+    document.getElementById('maint-drip').innerText = getDripRate(maint);
+    document.getElementById('hr1').innerText = rateHr1.toFixed(0) + " mL";
+    document.getElementById('hr1-drip').innerText = getDripRate(rateHr1);
+    document.getElementById('hrNext').innerText = rateHrNext.toFixed(0) + " mL/h";
+    document.getElementById('hrNext-drip').innerText = getDripRate(rateHrNext);
 
-    const drugData = [
-        { name: "Adrenaline", prep: "1mL in 10mL", dose: ibw*0.01, unit: "mg", ml: (ibw*0.01/0.1), type: "rescue" },
-        { name: "Ephedrine (Bolus)", prep: "Amp in 10mL", dose: 10, unit: "mg", ml: 3.3, type: "rescue" },
-        { name: "Propofol (Induction)", prep: "200mg/20mL", dose: ibw*2, unit: "mg", ml: (ibw*2/10) },
-        { name: "Fentanyl", prep: "100mcg/10mL", dose: ibw*1, unit: "mcg", ml: (ibw*1/10) },
-        { name: "Atracurium", prep: "50mg/10mL", dose: abw*0.5, unit: "mg", ml: (abw*0.5/5) },
-        { name: "Neostigmine", prep: "1 amp in 10mL", dose: w*0.05, unit: "mg", ml: (w*0.05/0.5) },
-        { name: "Atropine", prep: "1 amp in 10mL", dose: w*0.01, unit: "mg", ml: (w*0.01/0.1) },
-        { name: "Noradrenaline (Inf)", prep: "8mg in 50mL", dose: 0.05, unit: "mcg/kg/m", ml: (0.05*w*60/160), type: "inf" },
-        { name: "Dexmedetomidine (Inf)", prep: "50mcg in 50mL", dose: 0.2, unit: "mcg/kg/h", ml: (0.2*w/1), type: "inf" },
-        { name: "Midazolam (Bolus)", prep: "5mg/5mL", dose: ibw*0.05, unit: "mg", ml: (ibw*0.05/1) },
-        { name: "Ketamine", prep: "100mg/10mL", dose: ibw*1.5, unit: "mg", ml: (ibw*1.5/10) },
-        { name: "Paracetamol", prep: "1000mg/100mL", dose: w*15, unit: "mg", ml: (w*15/10) }
+    let ephDose = (age > 12) ? 5 : (w * 0.1);
+    let propDoseMg = (age < 12) ? (w*3) : (doseW*2);
+
+    const drugs = [
+        { cat: "Induction", name: "Propofol", prep: "200mg/20mL (10mg/mL)", dose: propDoseMg, unit: "mg", ml: propDoseMg/10 },
+        { cat: "Induction", name: "Fentanyl", prep: "100mcg/10mL (10mcg/mL)", dose: doseW*1, unit: "mcg", ml: (doseW*1)/10 },
+        { cat: "Induction", name: "Morphine", prep: "1mg / 1mL", dose: doseW*0.1, unit: "mg", ml: (doseW*0.1)/1 },
+        { cat: "Induction", name: "Ketamine", prep: "100mg/10mL (10mg/mL)", dose: doseW*1.5, unit: "mg", ml: (doseW*1.5)/10 },
+        { cat: "Induction", name: "Midazolam", prep: "5mg/5mL (1mg/mL)", dose: doseW*0.05, unit: "mg", ml: (doseW*0.05)/1 },
+        { cat: "Induction", name: "Atracurium", prep: "50mg/10mL (5mg/mL)", dose: abw*0.5, unit: "mg", ml: (abw*0.5)/5 },
+        { cat: "Induction", name: "Rocuronium", prep: "100mg/10mL (10mg/mL)", dose: abw*0.6, unit: "mg", ml: (abw*0.6)/10 },
+        { cat: "Induction", name: "Dexamethasone", prep: "4mg in 10mL (0.4mg/mL)", dose: Math.min(w*0.15, 8), unit: "mg", ml: Math.min(w*0.15, 8)/0.4 },
+        { cat: "Induction", name: "Hydrocortisone", prep: "100mg in 10mL (10mg/mL)", dose: w*4, unit: "mg", ml: (w*4)/10 },
+        { cat: "Reversal", name: "Neostigmine", prep: "Amp in 10mL (0.5mg/mL)", dose: w*0.05, unit: "mg", ml: (w*0.05)/0.5 },
+        { cat: "Reversal", name: "Atropine", prep: "Amp in 10mL (0.1mg/mL)", dose: w*0.02, unit: "mg", ml: (w*0.02)/0.1 },
+        { cat: "Reversal", name: "Sugammadex", prep: "100mg/mL", dose: w*2, unit: "mg", ml: (w*2)/100 },
+        { cat: "Infusion", name: "Noradrenaline", prep: "8mg in 50mL (160mcg/mL)", dose: 0.05, unit: "mcg/kg/min", ml: (0.05*w*60)/160, isRate: true },
+        { cat: "Infusion", name: "Dexmedetomidine", prep: "50mcg in 50mL (1mcg/mL)", dose: 0.2, unit: "mcg/kg/h", ml: (0.2*w)/1, isRate: true },
+        { cat: "Rescue", name: "Ephedrine", prep: "Diluted (3mg/mL)", dose: ephDose, unit: "mg", ml: ephDose/3 },
+        { cat: "Rescue", name: "Adrenaline", prep: "1mg in 10mL (0.1mg/mL)", dose: w*0.01, unit: "mg", ml: (w*0.01)/0.1 },
     ];
 
-    let html = "";
-    drugData.forEach(d => {
-        let rowClass = d.type === 'inf' ? 'infusion-row' : d.type === 'rescue' ? 'rescue-row' : '';
-        html += `<tr class="${rowClass}">
-            <td><b>${d.name}</b>${d.type==='rescue'?'<span class="badge">RESCUE</span>':''}<br><small>${d.prep}</small></td>
-            <td>${d.dose.toFixed(1)} ${d.unit}</td>
-            <td class="ml-col">${d.ml.toFixed(d.type === 'inf' ? 2 : 1)} mL${d.type === 'inf' ? '/hr' : ''}</td>
+    let html = ""; let lastCat = "";
+    drugs.forEach(d => {
+        if(d.cat !== lastCat) { html += `<tr class="cat-row"><td colspan="3">${d.cat}</td></tr>`; lastCat = d.cat; }
+        html += `<tr>
+            <td><span class="drug-name">${d.name}</span><span class="drug-prep">${d.prep}</span></td>
+            <td>${d.dose.toFixed(2)} ${d.unit}</td>
+            <td class="ml-col">${d.ml.toFixed(1)}${d.isRate ? " mL/hr" : " mL"}</td>
         </tr>`;
     });
     document.getElementById('drug-list').innerHTML = html;
+
+    let lidoMg = w * 3;
+    document.getElementById('la-lido').innerText = `${(lidoMg/20).toFixed(1)} mL (${lidoMg.toFixed(0)}mg)`;
+    let marcMg = w * 2;
+    document.getElementById('la-marcaine').innerText = `${(marcMg/5).toFixed(1)} mL (${marcMg.toFixed(0)}mg)`;
+}
+
+function saveAsImage() {
+    const captureElement = document.getElementById('app-content');
+    html2canvas(captureElement, { backgroundColor: "#1a1a1a" }).then(canvas => {
+        const link = document.createElement('a');
+        link.download = `Abdowthesia_${document.getElementById('weight').value}kg.png`;
+        link.href = canvas.toDataURL();
+        link.click();
+    });
 }
 window.onload = updateFromAge;
 </script>
