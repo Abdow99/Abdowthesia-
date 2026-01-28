@@ -4,6 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Abdowthesia Pro</title>
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Abdowthesia">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#1a1a1a">
+
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <style>
         :root { 
@@ -231,6 +238,19 @@
 </div>
 
 <script>
+// SERVICE WORKER REGISTRATION (Allows Offline Use)
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        const swBlob = new Blob([`
+            const CACHE_NAME = 'abdowthesia-v1';
+            const assets = [location.href];
+            self.addEventListener('install', e => e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(assets))));
+            self.addEventListener('fetch', e => e.respondWith(caches.match(e.request).then(r => r || fetch(e.request))));
+        `], { type: 'application/javascript' });
+        navigator.serviceWorker.register(URL.createObjectURL(swBlob));
+    });
+}
+
 function updateFromAge() {
     const age = parseFloat(document.getElementById('age').value) || 0;
     let avgWeight = 0;
@@ -256,7 +276,6 @@ function calculate() {
     const isPeds = (age < 12 || w < 40);
     document.getElementById('peds-alert').style.display = isPeds ? 'block' : 'none';
     
-    // IBW Calculation for Volutrauma protection
     let ibw = 70; 
     if (age < 1) ibw = (age * 12 + 9) / 2; 
     else if (age <= 8) ibw = (age * 2) + 8;
@@ -298,7 +317,6 @@ function calculate() {
     document.getElementById('norm-rr').innerText = rr;
     document.getElementById('vent-rr').innerText = vrr;
     
-    // Tidal Volume based on IBW
     let vtMin = ibw * 6;
     let vtMax = ibw * 8;
     document.getElementById('tidal-vol').innerText = `${vtMin.toFixed(0)}-${vtMax.toFixed(0)} mL`;
@@ -314,7 +332,6 @@ function calculate() {
     document.getElementById('hrNext').innerText = rateHrNext.toFixed(0) + " mL/h";
     document.getElementById('hrNext-drip').innerText = getDripRate(rateHrNext);
 
-    // Atropine Specific Calculation Logic
     let atropineMg = 0;
     if (age < 18) {
         atropineMg = w * 0.02;
