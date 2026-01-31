@@ -40,7 +40,7 @@
             background: var(--bg); 
             color: var(--text-light); 
             line-height: 1.4; 
-            -webkit-text-size-adjust: 100%; /* Prevents font scaling */
+            -webkit-text-size-adjust: 100%;
         }
 
         .container { 
@@ -171,7 +171,7 @@
     </div>
     
     <div id="peds-alert" class="alert alert-peds">👶 Pediatric Dosing Active: Please double check the dilution of drugs before administration.</div>
-    <div id="obese-alert" class="alert alert-warn">⚠️ Obesity: Doses Adjusted to IBW/ABW</div>
+    <div id="obese-alert" class="alert alert-warn">⚠️ Obesity Detected: Dosing Adjusted (IBW/AdjBW)</div>
 
     <section>
         <div class="section-title">❤️ Vitals</div>
@@ -290,8 +290,16 @@ function calculate() {
 
     const isObese = (w > ibw * 1.3 && age >= 12);
     document.getElementById('obese-alert').style.display = isObese ? 'block' : 'none';
+    
+    // OBESITY LOGIC CALCULATIONS
     const abw = isObese ? (ibw + 0.4 * (w - ibw)) : w;
-    const doseW = isObese ? ibw : w;
+    
+    // Dosing Weights based on Clinical Rules
+    const w_induction = isObese ? abw : w; // Propofol, Ketamine (AdjBW)
+    const w_nmb = isObese ? ibw : w;       // Rocuronium, Atracurium (IBW)
+    const w_opioid = w;                    // Fentanyl (TBW)
+    const w_midaz = isObese ? abw : w;     // Midazolam (AdjBW)
+    const w_dex = isObese ? abw : w;       // Dexmedetomidine (AdjBW)
 
     let ettVal = 0; let ettText = ""; let suctionText = ""; let bladeText = "";
     if (age < 0.1) { ettVal = 2.5; ettText = "2.5"; suctionText = "6 Fr"; bladeText = "Miller 0"; }
@@ -348,23 +356,54 @@ function calculate() {
     }
 
     let ephDose = (age > 12) ? 5 : (w * 0.1);
-    let propDoseMg = (age < 12) ? (w*3) : (doseW*2);
+    let propDoseMg = (age < 12) ? (w*3) : (w_induction*2);
+    
+    // STEROID LOGIC
+    let dexDose = 0;
+    let dexPrepStr = "8mg in 10mL (0.8mg/mL)"; // Adjusted for Adult Vol
+    let dexConc = 0.8; 
+    if(age < 18) {
+        dexPrepStr = "4mg in 10mL (0.4mg/mL)";
+        dexConc = 0.4;
+        dexDose = w * 0.15; 
+        if(dexDose > 10) dexDose = 10;
+    } else {
+        dexDose = 8; // Adult fixed 8mg
+    }
+
+    let hydroDose = 0;
+    if(age < 0.1) hydroDose = w * 1.5;
+    else if(age < 18) {
+        hydroDose = w * 2;
+        if(hydroDose > 50) hydroDose = 50;
+    } else {
+        hydroDose = 100;
+    }
+
+    // ANALGESIA LOGIC
+    let paracetDose = (age < 1) ? w * 10 : w * 15;
+    if(paracetDose > 1000) paracetDose = 1000;
+    
+    let ketoDose = w * 0.5;
+    if(ketoDose > 30) ketoDose = 30;
 
     const drugs = [
         { cat: "Induction", name: "Propofol", prep: "200mg/20mL (10mg/mL)", dose: propDoseMg, unit: "mg", ml: propDoseMg/10 },
-        { cat: "Induction", name: "Fentanyl", prep: "100mcg/10mL (10mcg/mL)", dose: doseW*1, unit: "mcg", ml: (doseW*1)/10 },
-        { cat: "Induction", name: "Morphine", prep: "1mg / 1mL", dose: doseW*0.1, unit: "mg", ml: (doseW*0.1)/1 },
-        { cat: "Induction", name: "Ketamine", prep: "100mg/10mL (10mg/mL)", dose: doseW*1.5, unit: "mg", ml: (doseW*1.5)/10 },
-        { cat: "Induction", name: "Midazolam", prep: "5mg/5mL (1mg/mL)", dose: doseW*0.05, unit: "mg", ml: (doseW*0.05)/1 },
-        { cat: "Induction", name: "Atracurium", prep: "50mg/10mL (5mg/mL)", dose: abw*0.5, unit: "mg", ml: (abw*0.5)/5 },
-        { cat: "Induction", name: "Rocuronium", prep: "100mg/10mL (10mg/mL)", dose: abw*0.6, unit: "mg", ml: (abw*0.6)/10 },
-        { cat: "Induction", name: "Dexamethasone", prep: "4mg in 10mL (0.4mg/mL)", dose: Math.min(w*0.15, 8), unit: "mg", ml: Math.min(w*0.15, 8)/0.4 },
-        { cat: "Induction", name: "Hydrocortisone", prep: "100mg in 10mL (10mg/mL)", dose: w*4, unit: "mg", ml: (w*4)/10 },
+        { cat: "Induction", name: "Fentanyl", prep: "100mcg/10mL (10mcg/mL)", dose: w_opioid*1, unit: "mcg", ml: (w_opioid*1)/10 },
+        { cat: "Induction", name: "Morphine", prep: "1mg / 1mL", dose: w*0.1, unit: "mg", ml: (w*0.1)/1 },
+        { cat: "Induction", name: "Ketamine", prep: "100mg/10mL (10mg/mL)", dose: w_induction*1.5, unit: "mg", ml: (w_induction*1.5)/10 },
+        { cat: "Induction", name: "Midazolam", prep: "5mg/5mL (1mg/mL)", dose: w_midaz*0.05, unit: "mg", ml: (w_midaz*0.05)/1 },
+        { cat: "Induction", name: "Atracurium", prep: "50mg/10mL (5mg/mL)", dose: w_nmb*0.5, unit: "mg", ml: (w_nmb*0.5)/5 },
+        { cat: "Induction", name: "Rocuronium", prep: "100mg/10mL (10mg/mL)", dose: w_nmb*0.6, unit: "mg", ml: (w_nmb*0.6)/10 },
+        { cat: "Induction", name: "Dexamethasone", prep: dexPrepStr, dose: dexDose, unit: "mg", ml: dexDose/dexConc },
+        { cat: "Induction", name: "Hydrocortisone", prep: "100mg in 10mL (10mg/mL)", dose: hydroDose, unit: "mg", ml: hydroDose/10 },
+        { cat: "Analgesia", name: "Paracetamol", prep: "1g in 100mL (10mg/mL)", dose: paracetDose, unit: "mg", ml: paracetDose/10 },
+        { cat: "Analgesia", name: "Ketolac", prep: "Amp 30mg in 10mL (3mg/mL)", dose: ketoDose, unit: "mg", ml: ketoDose/3 },
         { cat: "Reversal", name: "Neostigmine", prep: "Amp in 10mL (0.5mg/mL)", dose: w*0.05, unit: "mg", ml: (w*0.05)/0.5 },
         { cat: "Reversal", name: "Atropine", prep: "Amp in 10mL (0.1mg/mL)", dose: atropineMg, unit: "mg", ml: atropineMg/0.1 },
         { cat: "Reversal", name: "Sugammadex", prep: "100mg/mL", dose: w*2, unit: "mg", ml: (w*2)/100 },
         { cat: "Infusion", name: "Noradrenaline", prep: "8mg in 50mL (160mcg/mL)", dose: 0.05, unit: "mcg/kg/min", ml: (0.05*w*60)/160, isRate: true },
-        { cat: "Infusion", name: "Dexmedetomidine", prep: "50mcg in 50mL (1mcg/mL)", dose: 0.2, unit: "mcg/kg/h", ml: (0.2*w)/1, isRate: true },
+        { cat: "Infusion", name: "Dexmedetomidine", prep: "50mcg in 50mL (1mcg/mL)", dose: 0.2, unit: "mcg/kg/h", ml: (0.2*w_dex)/1, isRate: true },
         { cat: "Rescue", name: "Ephedrine", prep: "Diluted (3mg/mL)", dose: ephDose, unit: "mg", ml: ephDose/3 },
         { cat: "Rescue", name: "Adrenaline", prep: "1mg in 10mL (0.1mg/mL)", dose: w*0.01, unit: "mg", ml: (w*0.01)/0.1 },
     ];
