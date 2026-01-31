@@ -186,7 +186,7 @@
         <div class="section-title">🌬️ Airway & Vent Parameters</div>
         <div class="card grid-3">
             <div class="data-box"><div class="label">ETT Size</div><div id="ett-size" class="val">--</div></div>
-            <div class="data-box"><div class="label">Suction</div><div id="suction" class="val">--</div></div>
+            <div class="data-box"><div class="label">Suction Color</div><div id="suction" class="val">--</div></div>
             <div class="data-box"><div class="label">Depth</div><div id="depth" class="val">--</div></div>
             <div class="data-box"><div class="label">Blade</div><div id="blade" class="val">--</div></div>
             <div class="data-box"><div class="label">RR</div><div id="vent-rr" class="val">--</div></div>
@@ -302,17 +302,17 @@ function calculate() {
     const w_dex = isObese ? abw : w;       // Dexmedetomidine (AdjBW)
 
     let ettVal = 0; let ettText = ""; let suctionText = ""; let bladeText = "";
-    if (age < 0.1) { ettVal = 2.5; ettText = "2.5"; suctionText = "6 Fr"; bladeText = "Miller 0"; }
-    else if (age < 0.5) { ettVal = 3.0; ettText = "3.0"; suctionText = "6 Fr"; bladeText = "Miller 0/1"; }
-    else if (age < 1.0) { ettVal = 3.5; ettText = "3.5"; suctionText = "6 Fr"; bladeText = "Mac 1"; }
-    else if (age < 2.0) { ettVal = 4.0; ettText = "4.0"; suctionText = "8 Fr"; bladeText = "Mac 1/2"; }
-    else if (age < 4.0) { ettVal = 4.5; ettText = "4.5"; suctionText = "8 Fr"; bladeText = "Mac 2"; }
-    else if (age < 5.5) { ettVal = 5.0; ettText = "5.0"; suctionText = "10 Fr"; bladeText = "Mac 2"; }
-    else if (age < 7.0) { ettVal = 5.5; ettText = "5.5"; suctionText = "10 Fr"; bladeText = "Mac 2"; }
-    else if (age < 10.0) { ettVal = 6.0; ettText = "6.0"; suctionText = "10 Fr"; bladeText = "Mac 2/3"; }
-    else if (age < 14.0) { ettVal = 6.5; ettText = "6.5"; suctionText = "10 Fr"; bladeText = "Mac 3"; }
-    else if (age < 18.0) { ettVal = 7.0; ettText = "6.5-7"; suctionText = "12 Fr"; bladeText = "Mac 3"; }
-    else { ettVal = 7.5; ettText = "7-7.5"; suctionText = "12-14 Fr"; bladeText = "Mac 3/4"; }
+    if (age < 0.1) { ettVal = 2.5; ettText = "2.5"; suctionText = "Light Green"; bladeText = "Miller 0"; } // 6Fr
+    else if (age < 0.5) { ettVal = 3.0; ettText = "3.0"; suctionText = "Light Green"; bladeText = "Miller 0/1"; } // 6Fr
+    else if (age < 1.0) { ettVal = 3.5; ettText = "3.5"; suctionText = "Light Green"; bladeText = "Mac 1"; } // 6Fr
+    else if (age < 2.0) { ettVal = 4.0; ettText = "4.0"; suctionText = "Blue"; bladeText = "Mac 1/2"; } // 8Fr
+    else if (age < 4.0) { ettVal = 4.5; ettText = "4.5"; suctionText = "Blue"; bladeText = "Mac 2"; } // 8Fr
+    else if (age < 5.5) { ettVal = 5.0; ettText = "5.0"; suctionText = "Black"; bladeText = "Mac 2"; } // 10Fr
+    else if (age < 7.0) { ettVal = 5.5; ettText = "5.5"; suctionText = "Black"; bladeText = "Mac 2"; } // 10Fr
+    else if (age < 10.0) { ettVal = 6.0; ettText = "6.0"; suctionText = "Black"; bladeText = "Mac 2/3"; } // 10Fr
+    else if (age < 14.0) { ettVal = 6.5; ettText = "6.5"; suctionText = "Black"; bladeText = "Mac 3"; } // 10Fr
+    else if (age < 18.0) { ettVal = 7.0; ettText = "6.5-7"; suctionText = "White"; bladeText = "Mac 3"; } // 12Fr
+    else { ettVal = 7.5; ettText = "7-7.5"; suctionText = "White / Green"; bladeText = "Mac 3/4"; } // 12-14Fr
 
     let depthVal = (age < 0.1) ? w + 6 : (age >= 18 ? 3 * ettVal : (age / 2) + 12);
     document.getElementById('ett-size').innerText = ettText;
