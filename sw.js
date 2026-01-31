@@ -1,3 +1,4 @@
+// Version 1.0.1 - Updated Suction Catheter Colors
 const CACHE_NAME = 'abdowthesia-v1';
 const ASSETS = [
   'index.html',
