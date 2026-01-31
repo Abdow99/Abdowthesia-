@@ -425,14 +425,46 @@ function calculate() {
     document.getElementById('la-marcaine').innerText = `${(marcMg/5).toFixed(1)} mL (${marcMg.toFixed(0)}mg)`;
 }
 
-function saveAsImage() {
+async function saveAsImage() {
     const captureElement = document.getElementById('app-content');
-    html2canvas(captureElement, { backgroundColor: "#1a1a1a", scale: 2 }).then(canvas => {
-        const link = document.createElement('a');
-        link.download = `Abdowthesia_${document.getElementById('weight').value}kg.png`;
-        link.href = canvas.toDataURL();
-        link.click();
+    
+    // 1. Capture the element as a canvas
+    const canvas = await html2canvas(captureElement, { 
+        backgroundColor: "#1a1a1a", 
+        scale: 2,
+        useCORS: true 
     });
+
+    // 2. Convert canvas to a Blob (file data)
+    canvas.toBlob(async (blob) => {
+        const file = new File([blob], `Abdowthesia_${document.getElementById('weight').value}kg.png`, { type: 'image/png' });
+
+        // 3. Check if the browser supports Sharing files (Modern iOS/Android)
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            try {
+                await navigator.share({
+                    files: [file],
+                    title: 'Clinical Summary',
+                    text: 'Patient Anesthesia Data'
+                });
+            } catch (err) {
+                // If user cancels or share fails, fallback to download
+                downloadFallback(canvas);
+            }
+        } else {
+            // 4. Fallback for older browsers
+            downloadFallback(canvas);
+        }
+    }, 'image/png');
+}
+
+// Helper function for the old download method
+function downloadFallback(canvas) {
+    const link = document.createElement('a');
+    link.download = `Abdowthesia_${document.getElementById('weight').value}kg.png`;
+    link.href = canvas.toDataURL();
+    link.click();
+    alert("Check your 'Downloads' or 'Files' folder.");
 }
 window.onload = updateFromAge;
 </script>
