@@ -287,7 +287,6 @@ function calculate() {
     const w = parseFloat(document.getElementById('weight').value) || 0;
     const age = parseFloat(document.getElementById('age').value) || 0;
     
-    // LOGIC FIX: Pediatric alert only triggers if Age < 12, regardless of weight.
     const isPeds = (age < 12);
     document.getElementById('peds-alert').style.display = isPeds ? 'block' : 'none';
     
@@ -300,7 +299,6 @@ function calculate() {
     const isObese = (w > ibw * 1.3 && age >= 12);
     document.getElementById('obese-alert').style.display = isObese ? 'block' : 'none';
     
-    // Logic for Weight Types
     const abw = isObese ? (ibw + 0.4 * (w - ibw)) : w;
     const w_induction = isObese ? abw : w; 
     const w_nmb = isObese ? ibw : w;       
@@ -356,18 +354,8 @@ function calculate() {
     document.getElementById('hrNext').innerText = rateHrNext.toFixed(0) + " mL/h";
     document.getElementById('hrNext-drip').innerText = getDripRate(rateHrNext);
 
-    let atropineMg = 0;
-    if (age < 18) {
-        atropineMg = w * 0.02;
-        if (atropineMg < 0.1) atropineMg = 0.1;
-        if (atropineMg > 0.5) atropineMg = 0.5;
-    } else {
-        atropineMg = w * 0.01;
-        if (atropineMg < 0.5) atropineMg = 0.5;
-        if (atropineMg > 1.0) atropineMg = 1.0;
-    }
+    // --- DRUG CALCULATIONS UPDATED ---
 
-    let ephDose = (age > 12) ? 5 : (w * 0.1);
     let propDoseMg = (age < 12) ? (w*3) : (w_induction*2);
     
     let dexDose = 0;
@@ -397,6 +385,31 @@ function calculate() {
     let ketoDose = w * 0.5;
     if(ketoDose > 30) ketoDose = 30;
 
+    // 1. Neostigmine: 0.05 mg/kg IBW, Max 5mg
+    let neoDose = ibw * 0.05;
+    if (neoDose > 5) neoDose = 5;
+
+    // 2. Atropine: Ratio with Neo (Standard ~0.4, i.e., 2.5mg Neo + 1mg Atro)
+    // Safe standard mixture prevents bradycardia.
+    let atropineDose = neoDose * 0.4;
+    // Safety check: Min 0.1mg for pediatrics to prevent paradoxical bradycardia
+    if (age < 12 && atropineDose < 0.1) atropineDose = 0.1;
+
+    // 3. Ephedrine: IBW * 0.1, Max 6mg
+    let ephDose = ibw * 0.1;
+    if (ephDose > 6) ephDose = 6;
+
+    // 4. Adrenaline: Adult 25mcg, Peds 1mcg/kg (0.001 mg/kg) - SAFE rescue dose
+    let adrDose = 0;
+    let adrBadge = "";
+    if (age >= 12) {
+        adrDose = 0.025; // 25 mcg
+        adrBadge = "Fixed";
+    } else {
+        adrDose = w * 0.001; // 1 mcg/kg
+        adrBadge = "TBW";
+    }
+
     const drugs = [
         { cat: "Induction", name: "Propofol", prep: "200mg/20mL (10mg/mL)", dose: propDoseMg, unit: "mg", ml: propDoseMg/10, badge: (age < 12 ? b_tbw : b_ind) },
         { cat: "Induction", name: "Fentanyl", prep: "100mcg/10mL (10mcg/mL)", dose: w_opioid*1, unit: "mcg", ml: (w_opioid*1)/10, badge: b_tbw },
@@ -409,25 +422,30 @@ function calculate() {
         { cat: "Induction", name: "Hydrocortisone", prep: "100mg in 10mL (10mg/mL)", dose: hydroDose, unit: "mg", ml: hydroDose/10, badge: (age < 18 ? b_tbw : "Fixed") },
         { cat: "Analgesia", name: "Paracetamol", prep: "1g in 100mL (10mg/mL)", dose: paracetDose, unit: "mg", ml: paracetDose/10, badge: b_tbw },
         { cat: "Analgesia", name: "Ketolac", prep: "Amp 30mg in 10mL (3mg/mL)", dose: ketoDose, unit: "mg", ml: ketoDose/3, badge: b_tbw },
-        { cat: "Reversal", name: "Neostigmine", prep: "2.5mg in 10mL (0.25mg/mL)", dose: w*0.05, unit: "mg", ml: (w*0.05)/0.25, badge: b_tbw },
-        { cat: "Reversal", name: "Atropine", prep: "Amp in 10mL (0.1mg/mL)", dose: atropineMg, unit: "mg", ml: atropineMg/0.1, badge: b_tbw },
+        
+        // REVERSAL
+        { cat: "Reversal", name: "Neostigmine", prep: "2.5mg in 10mL (0.25mg/mL)", dose: neoDose, unit: "mg", ml: neoDose/0.25, badge: "IBW" },
+        { cat: "Reversal", name: "Atropine", prep: "Amp in 10mL (0.1mg/mL)", dose: atropineDose, unit: "mg", ml: atropineDose/0.1, badge: "Linked" },
         { cat: "Reversal", name: "Sugammadex", prep: "100mg/mL", dose: w*2, unit: "mg", ml: (w*2)/100, badge: b_tbw },
+        
+        // INFUSION
         { cat: "Infusion", name: "Noradrenaline", prep: "8mg in 50mL (160mcg/mL)", dose: 0.05, unit: "mcg/kg/min", ml: (0.05*w*60)/160, isRate: true, badge: b_tbw },
         { cat: "Infusion", name: "Dexmedetomidine", prep: "50mcg in 50mL (1mcg/mL)", dose: 0.2, unit: "mcg/kg/h", ml: (0.2*w_dex)/1, isRate: true, badge: b_ind },
-        { cat: "Rescue", name: "Ephedrine", prep: "Diluted (3mg/mL)", dose: ephDose, unit: "mg", ml: ephDose/3, badge: (age > 12 ? "Fixed" : b_tbw) },
-        { cat: "Rescue", name: "Adrenaline", prep: "1mg in 10mL (0.1mg/mL)", dose: w*0.01, unit: "mg", ml: (w*0.01)/0.1, badge: b_tbw },
+        
+        // RESCUE
+        { cat: "Rescue", name: "Ephedrine", prep: "Diluted (3mg/mL)", dose: ephDose, unit: "mg", ml: ephDose/3, badge: "IBW" },
+        { cat: "Rescue", name: "Adrenaline", prep: "1mg in 10mL (0.1mg/mL)", dose: adrDose, unit: "mg", ml: adrDose/0.1, badge: adrBadge },
     ];
 
     let html = ""; let lastCat = "";
     drugs.forEach(d => {
         if(d.cat !== lastCat) { html += `<tr class="cat-row"><td colspan="3">${d.cat}</td></tr>`; lastCat = d.cat; }
-        // Changed "FIX" to "Fixed" for better UI
         let bClass = d.badge.toLowerCase();
         if(bClass === "fixed") bClass = "fixed"; 
         
         html += `<tr>
             <td><span class="drug-name">${d.name}</span><span class="drug-prep">${d.prep}</span></td>
-            <td>${d.dose.toFixed(2)} ${d.unit}<span class="w-badge w-${bClass}">${d.badge}</span></td>
+            <td>${d.dose.toFixed(d.name === 'Adrenaline' || d.name === 'Atropine' ? 3 : 2)} ${d.unit}<span class="w-badge w-${bClass}">${d.badge}</span></td>
             <td class="ml-col">${d.ml.toFixed(1)}${d.isRate ? " mL/hr" : " mL"}</td>
         </tr>`;
     });
@@ -435,11 +453,11 @@ function calculate() {
 
     // LOCAL ANESTHESIA MAX LOGIC - Strictly IBW
     let lidoMg = ibw * 3;
-    if (lidoMg > 300) lidoMg = 300; // Adult Cap
+    if (lidoMg > 300) lidoMg = 300; 
     document.getElementById('la-lido').innerText = `${(lidoMg/20).toFixed(1)} mL (${lidoMg.toFixed(0)}mg)`;
 
     let marcMg = ibw * 2;
-    if (marcMg > 175) marcMg = 175; // Adult Cap
+    if (marcMg > 175) marcMg = 175; 
     document.getElementById('la-marcaine').innerText = `${(marcMg/5).toFixed(1)} mL (${marcMg.toFixed(0)}mg)`;
 }
 
