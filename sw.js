@@ -1,4 +1,4 @@
-// Version 1.0.1 - Updated Suction Catheter Colors
+// Version 1.0.2 - Updated pediatrics and obese patients logic
 const CACHE_NAME = 'abdowthesia-v1';
 const ASSETS = [
   'index.html',
