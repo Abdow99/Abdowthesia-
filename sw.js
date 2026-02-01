@@ -1,4 +1,4 @@
-// Version 1.0.2 - Updated pediatrics and obese patients logic
+// Version 1.0.2 - Updated pediatrics and obese patients logic and calcultions
 const CACHE_NAME = 'abdowthesia-v1';
 const ASSETS = [
   'index.html',
